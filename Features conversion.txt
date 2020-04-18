@@ -1,0 +1,18 @@
+job_id                  remove (DONE)
+title                   tf-idf
+location                split (country -> hash index, city -> tf-idf)
+department              tf-idf
+salary_range            split in 2
+company_profile         tf-idf
+description             tf-idf
+requirements            tf-idf
+benefits                tf-idf
+telecommuting            OK
+has_company_logo         OK
+has_questions            OK
+employment_type          one-hot 
+required_experience      one-hot
+required_education       one-hot
+industry                 hash-index?
+function                 hash-index?
+fraudulent               OK

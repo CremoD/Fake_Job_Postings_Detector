@@ -1,0 +1,71 @@
+def get_numeric_df(dataframe):
+    numeric_cols = [col for col in dataframe.columns if dataframe[col].dtypes != 'O']
+    return dataframe.loc[:,numeric_cols]
+
+def get_text_df(dataframe):
+    text_cols = [col for col in dataframe.columns if dataframe[col].dtypes == 'O']
+    return dataframe.loc[:,'title']
+
+
+
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+get_numeric_transformer = FunctionTransformer(get_numeric_df)
+get_text_transformer = FunctionTransformer(get_text_df)
+
+# undersampling
+
+df_class_0 = fake_real_encoded[fake_real_encoded['fraudulent'] == 0]
+df_class_1 = fake_real_encoded[fake_real_encoded['fraudulent'] == 1]
+
+df_class_0_under = df_class_0.sample(len(df_class_1))
+
+df_test_under = pd.concat([df_class_0_under, df_class_1], axis=0)
+
+
+y = df_test_under['fraudulent']
+X = df_test_under.drop(['fraudulent'], axis = 1)
+
+transformer1 = FunctionTransformer(lambda x : x['title'])
+transformer2 = FunctionTransformer(lambda x : x['department'])
+transformer3 = FunctionTransformer(lambda x : x['company_profile'])
+transformer4 = FunctionTransformer(lambda x : x['description'])
+transformer5 = FunctionTransformer(lambda x : x['requirements'])
+transformer6 = FunctionTransformer(lambda x : x['benefits'])
+transformer7 = FunctionTransformer(lambda x : x['city'])
+
+
+text_df = transformer1.fit_transform(fake_real_encoded)
+vectorizer = TfidfVectorizer(lowercase=True, stop_words = 'english', analyzer = "word")
+res = vectorizer.fit_transform(text_df)
+
+
+process_and_join_features = FeatureUnion(
+         [
+            ('numeric_features', Pipeline([
+                ('selector', get_numeric_transformer)
+            ])),
+             ('text_features1', Pipeline([
+                ('selector', transformer1),
+                ('vec', TfidfVectorizer(lowercase=True, stop_words = 'english', analyzer = "word"))
+            ])),
+             ('text_features2', Pipeline([
+                ('selector', transformer2),
+                ('vec', TfidfVectorizer(lowercase=True, stop_words = 'english', analyzer = "word"))
+            ])),
+             ('text_features3', Pipeline([
+                ('selector', transformer3),
+                ('vec', TfidfVectorizer(lowercase=True, stop_words = 'english', analyzer = "word"))
+            ])),
+             ('text_features6', Pipeline([
+                ('selector', transformer6),
+                ('vec', TfidfVectorizer(lowercase=True, stop_words = 'english', analyzer = "word"))
+            ])),
+             ('text_features7', Pipeline([
+                ('selector', transformer7),
+                ('vec', TfidfVectorizer(lowercase=True, stop_words = 'english', analyzer = "word"))
+            ]))
+         ]
+    )

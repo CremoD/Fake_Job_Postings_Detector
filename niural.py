@@ -33,11 +33,11 @@ class Niural:
 		print("Prediction is:")
 		print(res)
 
-		train_errors = self.layers_errors(res,np.array(y.loc[0,:]))
+		self.train_errors = self.layers_errors(res,np.array(y.loc[0,:]))
 
 			
 		print("-------------------------")
-		print(train_errors)
+		print(self.train_errors)
 
 	def random_weights(self, n_features, n_classes, hidden_layer):
 		self.weights = []
@@ -48,13 +48,14 @@ class Niural:
 			self.weights.append(np.random.rand(units[i+1],units[i] + 1))
 
 	def forward_propagate(self, x):
-		a = x.to_numpy()
+		a = x.to_numpy().reshape(-1,1)
 		a_history = [a]
+
 		for theta in self.weights:
-			a = np.insert(a,0,1)
-			z = np.dot(a,np.transpose(theta))
-			a = self.sigmoid(z)
-			a_history.append(a)
+		    a =  np.vstack((np.array([[1]]), a))
+		    z = np.dot(theta, a)
+		    a = self.sigmoid(z)
+		    a_history.append(a)
 
 		return a_history
 
@@ -65,11 +66,14 @@ class Niural:
 		i = len(self.hidden_layer)
 		while i >= 1:
 			print("Looping over",i)
-			current_error = np.dot(np.transpose(self.weights[i]),np.array([errors[0]])) * (a[i] * (1 - a[i]))
-			errors.insert(0,current_error.tolist())
+			curr_a = np.vstack((np.array([[1]]), a[i]))
+			current_error = np.multiply(np.dot(np.transpose(self.weights[i]),np.array(errors[0])),np.multiply(curr_a, (1 - curr_a)))
+			error = np.delete(current_error, 0, 0)
+			errors.insert(0,error.tolist())
 			i = i - 1
 
 		return errors
 
 	def sigmoid(self,number):
 		return 1/(1 + np.exp(-number))
+

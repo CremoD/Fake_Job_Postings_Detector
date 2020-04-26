@@ -15,6 +15,9 @@ class Niural:
 		print("Fitting the data")
 		
 
+	#########################################################################
+	# Fit method
+	#########################################################################
 	def fit(self, X, y):
 		n_classes = y.nunique()[0]
 		
@@ -23,22 +26,66 @@ class Niural:
 
 		self.random_weights(X.shape[1], n_classes, self.hidden_layer)
 
-		print("Weights")
-		for mat in self.weights:
-			print(mat)
-			print("-------------------------")
+		for j in range(0, self.n_epochs):
+			for i in X.index:
+				print("Index", i)
 
-		res = self.forward_propagate(X.loc[0,:])
-			
-		print("Prediction is:")
-		print(res)
+				self.a_history = self.forward_propagate(X.loc[i,:])
+					
+				self.train_errors = self.layers_errors(self.a_history,np.array(y.loc[i,:]))
 
-		self.train_errors = self.layers_errors(res,np.array(y.loc[0,:]))
+				# update weights
+				for i in range(0, len(self.weights)):
+					update_mat = self.update_weights(self.weights[i], self.a_history[i], self.train_errors[i]) 
+					self.weights[i] = self.weights[i] - (self.learning_rate*update_mat)
 
-			
-		print("-------------------------")
-		print(self.train_errors)
+		print("----------------------")
+		for weig in self.weights:
+			print(weig)
 
+
+
+	#########################################################################
+	# Predict
+	#########################################################################
+	def predict(self, X):
+
+		y_pred = []
+
+		for i in X.index:
+			actual_a = self.forward_propagate(X.loc[i,:])
+			print(i, ":", actual_a, "\n------------------\n")
+			prob = actual_a[-1][0][0]
+			print(prob)
+			if prob >= 0.5:
+				y_pred.append(1)
+			else:
+				y_pred.append(0)
+
+		return y_pred
+
+
+	#########################################################################
+	# Update weights
+	#########################################################################
+	def update_weights(self, theta, a, errors):
+		 a =  np.vstack((np.array([[1]]), a))
+		 gradients = np.array([])
+
+		 for err in errors:
+		 	curr_grad = err * a
+		 	gradients = np.concatenate((gradients, curr_grad.flatten()))
+
+		 return gradients.reshape(theta.shape)
+
+
+
+
+
+
+	#########################################################################
+	# Random weight initialization
+	#########################################################################
 	def random_weights(self, n_features, n_classes, hidden_layer):
 		self.weights = []
 		
@@ -47,6 +94,10 @@ class Niural:
 		for i in range(0, len(units) - 1):
 			self.weights.append(np.random.rand(units[i+1],units[i] + 1))
 
+
+	#########################################################################
+	# Forward propagation
+	#########################################################################
 	def forward_propagate(self, x):
 		a = x.to_numpy().reshape(-1,1)
 		a_history = [a]
@@ -59,13 +110,15 @@ class Niural:
 
 		return a_history
 
+	#########################################################################
+	# layers error calculation
+	#########################################################################
 	def layers_errors(self,a,y):
 		# calculate error for output layer
 		errors = [(a[-1] - y).tolist()]
 
 		i = len(self.hidden_layer)
 		while i >= 1:
-			print("Looping over",i)
 			curr_a = np.vstack((np.array([[1]]), a[i]))
 			current_error = np.multiply(np.dot(np.transpose(self.weights[i]),np.array(errors[0])),np.multiply(curr_a, (1 - curr_a)))
 			error = np.delete(current_error, 0, 0)
@@ -74,6 +127,9 @@ class Niural:
 
 		return errors
 
+	#########################################################################
+	# Sigmoid function
+	#########################################################################
 	def sigmoid(self,number):
 		return 1/(1 + np.exp(-number))
 

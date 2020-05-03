@@ -2,17 +2,17 @@ import numpy as np
 
 class Niural:
 
-	def __init__(self, n_epochs = 10, learning_rate = 0.1, reg_lambda = 1, hidden_layer = [100]):
+	def __init__(self, n_epochs = 10, learning_rate = 0.1, reg_lambda = 0.001, hidden_layers = [100]):
 		self.n_epochs = n_epochs
 		self.learning_rate = learning_rate
 		self.reg_lambda = reg_lambda
-		self.hidden_layer = hidden_layer
+		self.hidden_layers = hidden_layers
 
-	def prova(self):
-		print("Number of epochs", self.n_epochs)
-		print("learning_rate", self.learning_rate)
-		print("reg_lambda", self.reg_lambda)
-		print("Fitting the data")
+		print("Neural Network trained with the following parameters:")
+		print("\tNumber of epochs:", self.n_epochs)
+		print("\tLearning_rate:", self.learning_rate)
+		print("\tRegularization factor:", self.reg_lambda)
+		print("\tHidden layers configuration:", self.hidden_layers)
 		
 
 	#########################################################################
@@ -24,7 +24,7 @@ class Niural:
 		if(n_classes == 2):
 			n_classes = 1
 
-		self.random_weights(X.shape[1], n_classes, self.hidden_layer)
+		self.random_weights(X.shape[1], n_classes, self.hidden_layers)
 
 		for j in range(0, self.n_epochs):
 			self.epochs_errors = 0
@@ -93,10 +93,10 @@ class Niural:
 	#########################################################################
 	# Random weight initialization
 	#########################################################################
-	def random_weights(self, n_features, n_classes, hidden_layer):
+	def random_weights(self, n_features, n_classes, hidden_layers):
 		self.weights = []
 		
-		units = [n_features] + hidden_layer + [n_classes]
+		units = [n_features] + hidden_layers + [n_classes]
 
 		for i in range(0, len(units) - 1):
 			self.weights.append(np.random.rand(units[i+1],units[i] + 1))
@@ -124,7 +124,7 @@ class Niural:
 		# calculate error for output layer
 		errors = [(a[-1] - y).tolist()]
 
-		i = len(self.hidden_layer)
+		i = len(self.hidden_layers)
 		while i >= 1:
 			curr_a = np.vstack((np.array([[1]]), a[i]))
 			current_error = np.multiply(np.dot(np.transpose(self.weights[i]),np.array(errors[0])),np.multiply(curr_a, (1 - curr_a)))
